@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PromptSaver AI</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="logo">⚡</div>
+        <div>
+          <h1>PromptSaver AI</h1>
+          <p>Make messy prompts clear & efficient.</p>
+        </div>
+      </header>
+      <div class="hero">
+        <div><span>Tokens saved</span><b id="saved">0</b></div>
+        <div><span>Prompts optimized</span><b id="prompts">0</b></div>
+      </div>
+      <section class="card">
+        <div class="row">
+          <span>Average token reduction</span><strong id="reduction">0%</strong>
+        </div>
+        <div class="bar"><i id="bar"></i></div>
+      </section>
+      <section class="card">
+        <b>What it does</b>
+        <ul>
+          <li>Removes filler and repetition</li>
+          <li>Clarifies messy requirements</li>
+          <li>Preserves code and constraints</li>
+          <li>Shows before/after token estimates</li>
+        </ul>
+      </section>
+      <section class="card">
+        <b>Supported</b>
+        <p>ChatGPT · Claude · Gemini</p>
+      </section>
+      <footer>Local MVP — prompts are not sent to an external server.</footer>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

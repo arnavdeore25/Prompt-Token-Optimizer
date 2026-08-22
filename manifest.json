@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "PromptSaver AI - Prompt Optimizer",
+  "version": "2.0.0",
+  "description": "Turn messy AI prompts into clear, concise, intent-preserving prompts.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PromptSaver AI"
+  },
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon16.svg",
+    "48": "icon48.svg",
+    "128": "icon128.svg"
+  }
+}

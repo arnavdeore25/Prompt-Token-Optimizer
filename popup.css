@@ -1,0 +1,108 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  width: 350px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+main {
+  padding: 18px;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.logo {
+  width: 43px;
+  height: 43px;
+  border-radius: 13px;
+  background: #111827;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+}
+h1 {
+  font-size: 18px;
+  margin: 0;
+}
+header p {
+  font-size: 11px;
+  color: #64748b;
+  margin: 3px 0 0;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 17px 0 10px;
+}
+.hero div,
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 13px;
+}
+.hero span,
+.row span {
+  font-size: 11px;
+  color: #64748b;
+}
+.hero b {
+  font-size: 23px;
+  display: block;
+  margin-top: 5px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+.row strong {
+  font-size: 13px;
+}
+.bar {
+  height: 7px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 9px;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #111827;
+}
+.card {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.card ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #475569;
+  line-height: 1.7;
+}
+.card p {
+  color: #64748b;
+  margin: 6px 0 0;
+}
+footer {
+  font-size: 10px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 13px 2px 0;
+}
