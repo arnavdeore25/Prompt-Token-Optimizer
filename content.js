@@ -4,8 +4,7 @@
 
   const state = { composer: null };
 
-  const estimateTokens = (text) =>
-    Math.max(0, Math.ceil((text || "").trim().length / 4));
+  const estimateTokens = text => Math.max(0, Math.ceil((text || "").trim().length / 4));
 
   // MVP optimizer: designed for messy/vague prompts.
   // It improves structure and removes filler without sending user data anywhere.
@@ -18,17 +17,14 @@
 
     // Protect code blocks.
     const codeBlocks = [];
-    text = text.replace(/```[\s\S]*?```/g, (block) => {
+    text = text.replace(/```[\s\S]*?```/g, block => {
       const key = `__PS_CODE_${codeBlocks.length}__`;
       codeBlocks.push(block);
       return key;
     });
 
     // Normalize whitespace.
-    text = text
-      .replace(/\r/g, "")
-      .replace(/[ \t]+/g, " ")
-      .replace(/\n{3,}/g, "\n\n");
+    text = text.replace(/\r/g, "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n");
 
     // Remove conversational filler.
     const fillerRules = [
@@ -54,7 +50,7 @@
       [/\bCould you please\b/gi, ""],
       [/\bCan you please\b/gi, ""],
       [/\bPlease kindly\b/gi, ""],
-      [/\bif possible\b/gi, ""],
+      [/\bif possible\b/gi, ""]
     ];
 
     let fillerCount = 0;
@@ -78,7 +74,7 @@
       [/\bmake sure to\b/gi, "ensure"],
       [/\bI am currently working on\b/gi, "Working on"],
       [/\bI am trying to\b/gi, "I need to"],
-      [/\bI would like to\b/gi, "I want to"],
+      [/\bI would like to\b/gi, "I want to"]
     ];
 
     let phraseCount = 0;
@@ -102,7 +98,7 @@
       [/\bbut don't\b/gi, ". Do not"],
       [/\bI want\b/gi, "I need"],
       [/\bI wanna\b/gi, "I need to"],
-      [/\bmake it\b/gi, "Make it"],
+      [/\bmake it\b/gi, "Make it"]
     ];
 
     let requirementCount = 0;
@@ -135,16 +131,9 @@
     // make the requirements easier to scan. This is intentionally conservative.
     const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean);
     if (sentences.length === 1 && (text.match(/\band\b/gi) || []).length >= 4) {
-      const parts = text
-        .split(/\s+and\s+/i)
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (parts.length >= 4 && parts.every((p) => p.length > 10)) {
-        text = parts
-          .map(
-            (p, i) => `${i === 0 ? "Task" : "-"} ${p.replace(/[.!?]+$/, "")}`,
-          )
-          .join("\n");
+      const parts = text.split(/\s+and\s+/i).map(s => s.trim()).filter(Boolean);
+      if (parts.length >= 4 && parts.every(p => p.length > 10)) {
+        text = parts.map((p, i) => `${i === 0 ? "Task" : "-"} ${p.replace(/[.!?]+$/, "")}`).join("\n");
         changes.push("Structured rambling requirements");
       }
     }
@@ -178,7 +167,7 @@
       optimizedTokens,
       saved,
       reduction,
-      changes,
+      changes
     };
   }
 
@@ -186,26 +175,19 @@
     const selectors = [
       "textarea",
       '[contenteditable="true"]',
-      '[role="textbox"]',
+      '[role="textbox"]'
     ];
-    return (
-      [...document.querySelectorAll(selectors.join(","))]
-        .filter((el) => {
-          const r = el.getBoundingClientRect();
-          const s = getComputedStyle(el);
-          return (
-            r.width > 120 &&
-            r.height > 25 &&
-            s.display !== "none" &&
-            s.visibility !== "hidden"
-          );
-        })
-        .sort((a, b) => {
-          const ar = a.getBoundingClientRect();
-          const br = b.getBoundingClientRect();
-          return br.width * br.height - ar.width * ar.height;
-        })[0] || null
-    );
+    return [...document.querySelectorAll(selectors.join(","))]
+      .filter(el => {
+        const r = el.getBoundingClientRect();
+        const s = getComputedStyle(el);
+        return r.width > 120 && r.height > 25 && s.display !== "none" && s.visibility !== "hidden";
+      })
+      .sort((a, b) => {
+        const ar = a.getBoundingClientRect();
+        const br = b.getBoundingClientRect();
+        return br.width * br.height - ar.width * ar.height;
+      })[0] || null;
   }
 
   function getText(el) {
@@ -217,25 +199,17 @@
   function setText(el, value) {
     el.focus();
     if ("value" in el) {
-      const proto =
-        el.tagName === "TEXTAREA"
-          ? HTMLTextAreaElement.prototype
-          : HTMLInputElement.prototype;
+      const proto = el.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
       const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
-      if (setter) setter.call(el, value);
-      else el.value = value;
+      if (setter) setter.call(el, value); else el.value = value;
       el.dispatchEvent(new Event("input", { bubbles: true }));
       el.dispatchEvent(new Event("change", { bubbles: true }));
     } else {
       el.innerHTML = "";
       el.appendChild(document.createTextNode(value));
-      el.dispatchEvent(
-        new InputEvent("input", {
-          bubbles: true,
-          inputType: "insertText",
-          data: value,
-        }),
-      );
+      el.dispatchEvent(new InputEvent("input", {
+        bubbles: true, inputType: "insertText", data: value
+      }));
     }
   }
 
@@ -268,7 +242,7 @@
 
         <div class="ps-changes">
           <b>What changed</b>
-          <ul>${result.changes.map((c) => `<li>${escapeHtml(c)}</li>`).join("") || "<li>No changes needed</li>"}</ul>
+          <ul>${result.changes.map(c => `<li>${escapeHtml(c)}</li>`).join("") || "<li>No changes needed</li>"}</ul>
         </div>
 
         <div class="ps-warning">Review the optimized prompt before sending. This MVP uses local rules and does not send your prompt to a server.</div>
@@ -287,7 +261,7 @@
       await navigator.clipboard.writeText(result.optimized);
       const b = modal.querySelector("#ps-copy");
       b.textContent = "Copied";
-      setTimeout(() => (b.textContent = "Copy optimized"), 1200);
+      setTimeout(() => b.textContent = "Copy optimized", 1200);
     };
     modal.querySelector("#ps-use").onclick = () => {
       if (state.composer) setText(state.composer, result.optimized);
@@ -296,17 +270,9 @@
   }
 
   function escapeHtml(s) {
-    return String(s).replace(
-      /[&<>"']/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c],
-    );
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    }[c]));
   }
 
   function addButton() {
@@ -320,33 +286,28 @@
       button.id = "ps-optimize";
       button.type = "button";
       button.innerHTML = "⚡ Optimize Prompt";
-      button.addEventListener("click", (e) => {
+      button.addEventListener("click", e => {
         e.preventDefault();
         e.stopPropagation();
         const original = getText(state.composer).trim();
         if (!original) {
           button.textContent = "Type something first";
-          setTimeout(() => (button.innerHTML = "⚡ Optimize Prompt"), 1300);
+          setTimeout(() => button.innerHTML = "⚡ Optimize Prompt", 1300);
           return;
         }
         const result = optimizePrompt(original);
         result.original = original;
         showModal(result);
 
-        chrome.storage.local.get(["stats"], ({ stats }) => {
-          const old = stats || {
-            prompts: 0,
-            saved: 0,
-            original: 0,
-            optimized: 0,
-          };
+        chrome.storage.local.get(["stats"], ({stats}) => {
+          const old = stats || {prompts:0, saved:0, original:0, optimized:0};
           chrome.storage.local.set({
             stats: {
               prompts: old.prompts + 1,
               saved: old.saved + result.saved,
               original: old.original + result.originalTokens,
-              optimized: old.optimized + result.optimizedTokens,
-            },
+              optimized: old.optimized + result.optimizedTokens
+            }
           });
         });
       });
@@ -359,10 +320,7 @@
   }
 
   const observer = new MutationObserver(addButton);
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
   window.addEventListener("resize", addButton);
   setInterval(addButton, 1200);
   addButton();
