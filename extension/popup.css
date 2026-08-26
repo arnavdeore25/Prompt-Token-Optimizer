@@ -6,21 +6,15 @@ body {
   width: 350px;
   background: #f8fafc;
   color: #0f172a;
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: system-ui;
 }
 main {
   padding: 18px;
 }
 header {
   display: flex;
-  align-items: center;
   gap: 11px;
+  align-items: center;
 }
 .logo {
   width: 43px;
@@ -30,7 +24,6 @@ header {
   color: #fff;
   display: grid;
   place-items: center;
-  font-size: 21px;
 }
 h1 {
   font-size: 18px;
@@ -39,20 +32,41 @@ h1 {
 header p {
   font-size: 11px;
   color: #64748b;
-  margin: 3px 0 0;
+  margin: 3px 0;
 }
-.hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 17px 0 10px;
-}
+.status,
 .hero div,
 .card {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 13px;
+}
+.status {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-top: 15px;
+}
+.status i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+.status b,
+.status small {
+  display: block;
+  font-size: 11px;
+}
+.status small {
+  color: #94a3b8;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 10px 0;
 }
 .hero span,
 .row span {
@@ -67,11 +81,7 @@ header p {
 .row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   font-size: 12px;
-}
-.row strong {
-  font-size: 13px;
 }
 .bar {
   height: 7px;
@@ -83,26 +93,19 @@ header p {
 .bar i {
   display: block;
   height: 100%;
-  width: 0;
   background: #111827;
+  width: 0;
 }
 .card {
   margin-top: 10px;
   font-size: 12px;
 }
-.card ul {
-  margin: 8px 0 0;
-  padding-left: 18px;
-  color: #475569;
-  line-height: 1.7;
-}
 .card p {
   color: #64748b;
-  margin: 6px 0 0;
+  line-height: 1.5;
 }
 footer {
   font-size: 10px;
   color: #94a3b8;
-  line-height: 1.5;
-  margin: 13px 2px 0;
+  margin-top: 13px;
 }

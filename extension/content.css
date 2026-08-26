@@ -1,0 +1,149 @@
+#ps-optimize {
+  position: fixed;
+  z-index: 2147483647;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #111827;
+  color: #fff;
+  font: 700 12px system-ui;
+  box-shadow: 0 7px 24px #0003;
+  cursor: pointer;
+}
+#ps-optimize:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+#ps-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  font-family: system-ui;
+  color: #0f172a;
+}
+.ps-backdrop {
+  position: absolute;
+  inset: 0;
+  background: #0f172a77;
+  backdrop-filter: blur(3px);
+}
+.ps-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(980px, calc(100vw - 30px));
+  max-height: calc(100vh - 30px);
+  overflow: auto;
+  background: #fff;
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 30px 100px #0005;
+}
+.ps-head {
+  display: flex;
+  justify-content: space-between;
+}
+.ps-head small {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #64748b;
+}
+.ps-head h2 {
+  margin: 4px 0 18px;
+}
+.ps-head button {
+  border: 0;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 22px;
+  cursor: pointer;
+}
+.ps-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.ps-stats > div {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 13px;
+}
+.ps-stats small,
+.ps-stats span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+}
+.ps-stats b {
+  display: block;
+  font-size: 22px;
+  margin: 4px 0;
+}
+.ps-stats .green {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+.green b {
+  color: #047857;
+}
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+.cols label {
+  display: block;
+  font-size: 11px;
+  font-weight: 900;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+.cols pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  padding: 13px;
+  min-height: 170px;
+  max-height: 300px;
+  overflow: auto;
+  font: 12px/1.55 monospace;
+}
+.cols .opt {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.meta {
+  font-size: 11px;
+  color: #64748b;
+}
+.actions {
+  text-align: right;
+}
+.actions button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 15px;
+  margin-left: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.actions button:last-child {
+  background: #111827;
+  color: #fff;
+}
+@media (max-width: 700px) {
+  .cols,
+  .ps-stats {
+    grid-template-columns: 1fr;
+  }
+  .ps-card {
+    padding: 18px;
+  }
+}

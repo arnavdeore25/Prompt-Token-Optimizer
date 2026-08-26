@@ -1,13 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "PromptSaver AI - Prompt Optimizer",
-  "version": "2.0.0",
-  "description": "Turn messy AI prompts into clear, concise, intent-preserving prompts.",
+  "name": "PromptSaver AI - Local Model",
+  "version": "3.0.0",
+  "description": "Rewrite messy AI prompts locally using a model running on your computer.",
   "action": {
     "default_popup": "popup.html",
     "default_title": "PromptSaver AI"
   },
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8765/*",
+    "http://localhost:8765/*"
+  ],
   "content_scripts": [
     {
       "matches": [
@@ -16,8 +22,12 @@
         "https://claude.ai/*",
         "https://gemini.google.com/*"
       ],
-      "js": ["content.js"],
-      "css": ["content.css"],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -25,5 +35,8 @@
     "16": "icon16.svg",
     "48": "icon48.svg",
     "128": "icon128.svg"
+  },
+  "background": {
+    "service_worker": "background.js"
   }
 }
