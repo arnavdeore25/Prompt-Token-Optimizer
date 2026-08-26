@@ -84,26 +84,6 @@ The local service can use a runtime such as Ollama, but its implementation is no
 
 Open the Prompt Token Optimizer popup to confirm the local service status and view statistics.
 
-## Troubleshooting
-
-### Local server offline
-
-Confirm that the local service is running on port `8765`:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8765/health
-```
-
-Then reload the extension and the supported website.
-
-### Model not installed
-
-The service is reachable, but its configured model is unavailable. Install or configure the model expected by your local service, then check `/health` again.
-
-### Extension changes are not visible
-
-Return to `chrome://extensions`, click **Reload** and refresh the AI website tab.
-
 ## Project Structure
 
 ```text
