@@ -14,12 +14,6 @@ PromptSaver Token Optimizer is a **Manifest V3 Chrome extension** that uses a **
 - 🔒 **Local-first privacy** — prompts are sent to a local service rather than a PromptSaver cloud backend.
 - 💾 **Local usage tracking** — optimization statistics are stored using Chrome's local storage.
 
-
-### Core Idea
-
-> **PromptSaver Token Optimizer — Minimum tokens required to express maximum intent.**
-
-
 ## 🧩 Supported Websites
 
 The extension currently supports:
