@@ -1,51 +1,139 @@
 # PromptSaver Token Optimizer
 
-PromptSaver Token Optimizer is a Manifest V3 Chrome extension for optimizing AI prompts with a model running locally on your computer. Its goal is to reduce unnecessary tokens while preserving the prompt's meaning and intent.
+> **Minimum tokens required to express maximum intent.**
 
-> Minimum tokens required to express maximum intent.
+PromptSaver Token Optimizer is a **Manifest V3 Chrome extension** that uses a **locally running LLM** to optimize AI prompts. It rewrites messy, repetitive, or unnecessarily long prompts to make them more concise while preserving their original meaning, requirements, and intent.
 
-## Features
+## ✨ Features
 
-- Supports ChatGPT, Claude, and Gemini.
-- Uses a local model service instead of a PromptSaver backend.
-- Shows local model availability in the extension popup.
-- Tracks optimized prompts, estimated tokens saved, and average reduction.
-- Stores usage statistics locally with Chrome storage.
+- 🤖 **Local LLM-powered optimization** — prompts are processed using a model running on your computer.
+- 🌐 **Multi-platform support** — works with ChatGPT, Claude, and Gemini.
+- ✂️ **Prompt compression** — removes unnecessary wording, repetition, and conversational filler.
+- 🧠 **Intent preservation** — designed to preserve requirements, constraints, technical details, and important context.
+- 📊 **Token statistics** — shows estimated original tokens, optimized tokens, tokens saved, and percentage reduction.
+- 🔒 **Local-first privacy** — prompts are sent to a local service rather than a PromptSaver cloud backend.
+- 💾 **Local usage tracking** — optimization statistics are stored using Chrome's local storage.
 
-## Supported Websites
 
-The content script is enabled on:
+### Core Idea
+
+> **PromptSaver Token Optimizer — Minimum tokens required to express maximum intent.**
+
+
+## 🧩 Supported Websites
+
+The extension currently supports:
+
 - `chatgpt.com`
 - `chat.openai.com`
 - `claude.ai`
 - `gemini.google.com`
 
-## Architecture
-
-The browser extension communicates with a local service at `http://127.0.0.1:8765`:
+## 🏗️ Architecture
 
 ```text
-Supported AI website
-				|
-				v
-	 content.js  --->  background.js  --->  local model service
-				|                                      |
-				+---------- Chrome local storage <----+
+                Supported AI Website
+                        │
+                        ▼
+                   content.js
+                        │
+                        ▼
+                  background.js
+                        │
+                        ▼
+                    server.py
+                        │
+                        ▼
+                 Ollama / Local LLM
+                        │
+                        ▼
+                Optimized Prompt
+
+
+             Chrome Local Storage
+                      │
+                      ▼
+                Usage Statistics
 ```
-The repository contains the browser extension only. A local service must be running separately.
 
-## Local Service API
+The Chrome extension communicates with the local service through:
 
-The extension expects the service to expose these endpoints.
+```text
+http://127.0.0.1:8765
+```
+
+The local service communicates with the LLM running through Ollama.
+
+## 📁 Project Structure
+
+```text
+PromptSaver-Token-Optimizer/
+│
+├── extension/
+│   ├── background.js    # Forwards optimization requests
+│   ├── content.js       # Runs on supported AI websites
+│   ├── content.css      # In-page extension styles
+│   ├── manifest.json    # Chrome extension configuration
+│   ├── popup.html       # Extension popup
+│   ├── popup.js         # Health status and usage statistics
+│   ├── popup.css        # Popup styles
+│   ├── icon16.svg       # Extension icon
+│   ├── icon48.svg       # Extension icon
+│   └── icon128.svg      # Extension icon
+│
+├── server/
+│   ├── server.py        # Local API and Ollama integration
+│   ├── run.bat          # Windows startup script
+│   └── run.sh           # Linux/macOS startup script
+│
+├── .gitignore
+├── .gitattributes
+└── README.md
+```
+
+## 🧪Output Example
+
+A messy prompt:
+
+```text
+hey basically i want you to make a login page for my react
+project and it should have username and password and if the
+password is wrong then show an error and i don't want to use
+a database because this is just a prototype and after the
+user logs in i want them to go to the home page and there
+should also be a logout button and make it look good and
+responsive
+```
+
+PromptToken Optimizer can transform it into a more concise prompt such as:
+
+```text
+Create a responsive React login page with:
+
+- Username and password authentication
+- Validation and error messages
+- Local/object-based credentials; no database
+- Redirect to the home page after login
+- Logout functionality
+- Clean, modern UI
+```
+
+The goal is **not simply to make prompts shorter**. The goal is to remove unnecessary tokens while preserving the user's actual requirements.
+
+## 🔌 Local Service API
+
+The extension expects the local service to expose the following endpoints.
 
 ### `GET /health`
 
-Used by the popup to check the service and model status. A successful response may look like:
+Used by the extension to check whether the local service and model are available.
+
+Example response:
 
 ```json
 {
-	"ok": true,
-	"model": "your-local-model"
+  "ok": true,
+  "model": "qwen2.5:3b"
 }
 ```
 
@@ -55,50 +143,32 @@ The extension sends:
 
 ```json
 {
-	"prompt": "The prompt to optimize"
+  "prompt": "The prompt to optimize"
 }
 ```
 
-The response must contain an `optimized` string. The extension also understands these optional fields:
+The service returns:
 
 ```json
 {
-	"optimized": "The optimized prompt",
-	"model": "your-local-model",
-	"original_tokens": 120,
-	"optimized_tokens": 82,
-	"validation_passed": true
+  "optimized": "The optimized prompt",
+  "model": "qwen2.5:3b",
+  "original_tokens": 120,
+  "optimized_tokens": 82,
+  "validation_passed": true
 }
 ```
 
-The local service can use a runtime such as Ollama, but its implementation is not included in this repository.
+## 📊 Token Measurement
 
-## Installation
+The current MVP uses an **estimated token count** based on approximately four characters per token.
 
-1. Start the local model service on `127.0.0.1:8765`.
-2. Open `chrome://extensions` in Chrome or another Chromium-based browser.
-3. Enable **Developer mode**.
-4. Click **Load unpacked**.
-5. Select the `extension` folder from this repository.
-6. Open one of the supported websites and refresh the page.
+This means the displayed token savings are useful for comparing the original and optimized prompts, but they are **not exact tokenizer counts** for ChatGPT, Claude, or Gemini.
 
-Open the Prompt Token Optimizer popup to confirm the local service status and view statistics.
+Future versions can add platform-specific tokenizers for more accurate measurements.
 
-## Project Structure
 
-```text
-extension/
-├── background.js   # Forwards optimization requests to the local service
-├── content.js      # Runs on supported AI websites
-├── content.css     # In-page extension styles
-├── manifest.json   # Chrome extension configuration
-├── popup.html      # Popup markup
-├── popup.js        # Health status and usage statistics
-├── popup.css       # Popup styles
-└── icon*.svg       # Extension icons
-```
+## 👨‍💻 Author
 
-## Author
-
-Arnav Deore  
+**Arnav Deore**  
 MCA Student, Christ University, Bangalore
