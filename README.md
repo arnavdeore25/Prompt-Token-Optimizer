@@ -35,28 +35,77 @@ The extension currently supports:
                   background.js
                         │
                         ▼
-                    server.py
+              ┌─────────────────┐
+              │  server.py      │
+              │  POST /optimize │
+              └─────────────────┘
                         │
                         ▼
-                 Ollama / Local LLM
+              ┌─────────────────────────┐
+              │  Fast Local Check       │
+              │  (should_optimize?)     │
+              │  - Token estimate       │
+              │  - Filler detection     │
+              │  - Repetition check     │
+              │  - Scoring heuristics   │
+              └─────────────────────────┘
+                        │
+              ┌─────────┴─────────┐
+              │                   │
+           Score < 3          Score >= 3
+              │                   │
+              ▼                   ▼
+         Return Original      Call Ollama
+         (Skip Ollama)            │
+              │                   ▼
+              │         ┌──────────────────┐
+              │         │  LLM Optimization│
+              │         │  (with System    │
+              │         │   Prompt)        │
+              │         └──────────────────┘
+              │                   │
+              └─────────┬─────────┘
+                        ▼
+              ┌─────────────────────────┐
+              │  Validation             │
+              │  - Preserve code blocks │
+              │  - Preserve URLs        │
+              │  - Preserve numbers     │
+              │  - Preserve negations   │
+              └─────────────────────────┘
                         │
                         ▼
-                Optimized Prompt
-
-
+         ┌──────────────────────────────┐
+         │  Response with Metadata      │
+         │  - optimized prompt          │
+         │  - token counts & savings    │
+         │  - validation status         │
+         │  - optimization skip reason  │
+         │  - model used                │
+         └──────────────────────────────┘
+                        │
+                        ▼
+                  background.js
+                        │
+                        ▼
              Chrome Local Storage
                       │
                       ▼
                 Usage Statistics
 ```
 
-The Chrome extension communicates with the local service through:
+### Component Details
 
-```text
-http://127.0.0.1:8765
-```
+**content.js** — Runs on supported AI websites, injects the optimize button, and sends prompts to the background script.
 
-The local service communicates with the LLM running through Ollama.
+**background.js** — Forwards optimization requests from content.js to the local server via `http://127.0.0.1:8765/optimize`.
+
+**server.py** — Implements three key stages:
+1. **Fast Local Check** — Heuristic scoring determines if Ollama optimization is worthwhile
+2. **Ollama Integration** — Calls local LLM only for prompts scoring ≥ 3
+3. **Validation** — Ensures critical elements (code, URLs, numbers, negations) are preserved
+
+**Ollama / Local LLM** — Processes the prompt using the specified model (default: `qwen2.5:3b`) with a fine-tuned system prompt.
 
 ## 📁 Project Structure
 
@@ -149,7 +198,26 @@ The service returns:
   "model": "qwen2.5:3b",
   "original_tokens": 120,
   "optimized_tokens": 82,
-  "validation_passed": true
+  "tokens_saved": 38,
+  "reduction_percent": 31.7,
+  "validation_passed": true,
+  "optimization_skipped": false
+}
+```
+
+**Note:** If the prompt is already concise (score < 3 on heuristics), the service returns:
+
+```json
+{
+  "optimized": "The prompt (unchanged)",
+  "original_tokens": 45,
+  "optimized_tokens": 45,
+  "tokens_saved": 0,
+  "reduction_percent": 0,
+  "model": "none",
+  "validation_passed": true,
+  "optimization_skipped": true,
+  "reason": "Prompt is already concise. Ollama was not called."
 }
 ```
 
