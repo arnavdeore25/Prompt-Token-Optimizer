@@ -1,236 +1,204 @@
-# PromptSaver Token Optimizer
+# Prompt Token Optimizer
 
-> **Minimum tokens required to express maximum intent.**
+Prompt Token Optimizer is a local, privacy-first Chrome extension that shortens messy AI prompts while keeping the original intent, constraints, and technical details intact.
 
-PromptSaver Token Optimizer is a **Manifest V3 Chrome extension** that uses a **locally running LLM** to optimize AI prompts. It rewrites messy, repetitive, or unnecessarily long prompts to make them more concise while preserving their original meaning, requirements, and intent.
+It works by sending the prompt to a local Python service, which checks whether optimization is worth doing, optionally calls an Ollama model, and validates that important content such as URLs, numbers, negations, and code blocks is preserved.
 
-## ✨ Features
+## Features
 
-- 🤖 **Local LLM-powered optimization** — prompts are processed using a model running on your computer.
-- 🌐 **Multi-platform support** — works with ChatGPT, Claude, and Gemini.
-- ✂️ **Prompt compression** — removes unnecessary wording, repetition, and conversational filler.
-- 🧠 **Intent preservation** — designed to preserve requirements, constraints, technical details, and important context.
-- 📊 **Token statistics** — shows estimated original tokens, optimized tokens, tokens saved, and percentage reduction.
-- 🔒 **Local-first privacy** — prompts are sent to a local service rather than a PromptSaver cloud backend.
-- 💾 **Local usage tracking** — optimization statistics are stored using Chrome's local storage.
+- Local prompt optimization through Ollama
+- Chrome extension for supported AI sites
+- Fast heuristic check before LLM usage
+- Validation step to preserve key prompt details
+- Token savings and reduction stats
+- No cloud dependency for prompt rewriting
+- Local usage tracking in Chrome storage
 
-## 🧩 Supported Websites
+## Supported sites
 
-The extension currently supports:
+The extension is configured for:
 
-- `chatgpt.com`
-- `chat.openai.com`
-- `claude.ai`
-- `gemini.google.com`
+- https://chatgpt.com/
+- https://chat.openai.com/
+- https://claude.ai/
+- https://gemini.google.com/
 
-## 🏗️ Architecture
+## How it works
+
+1. The user selects or pastes a prompt in a supported AI website.
+2. The content script sends the prompt to the extension background worker.
+3. The background worker sends a POST request to the local service at http://127.0.0.1:8765/optimize.
+4. The Python server runs a fast local heuristic check.
+5. If the prompt is long or noisy enough, it calls the configured local model through Ollama.
+6. The optimized result is validated and returned with metadata such as original tokens, optimized tokens, and savings.
+
+## Architecture
 
 ```text
-                Supported AI Website
-                        │
-                        ▼
-                   content.js
-                        │
-                        ▼
-                  background.js
-                        │
-                        ▼
-              ┌─────────────────┐
-              │  server.py      │
-              │  POST /optimize │
-              └─────────────────┘
-                        │
-                        ▼
-              ┌─────────────────────────┐
-              │  Fast Local Check       │
-              │  (should_optimize?)     │
-              │  - Token estimate       │
-              │  - Filler detection     │
-              │  - Repetition check     │
-              │  - Scoring heuristics   │
-              └─────────────────────────┘
-                        │
-              ┌─────────┴─────────┐
-              │                   │
-           Score < 3          Score >= 3
-              │                   │
-              ▼                   ▼
-         Return Original      Call Ollama
-         (Skip Ollama)            │
-              │                   ▼
-              │         ┌──────────────────┐
-              │         │  LLM Optimization│
-              │         │  (with System    │
-              │         │   Prompt)        │
-              │         └──────────────────┘
-              │                   │
-              └─────────┬─────────┘
-                        ▼
-              ┌─────────────────────────┐
-              │  Validation             │
-              │  - Preserve code blocks │
-              │  - Preserve URLs        │
-              │  - Preserve numbers     │
-              │  - Preserve negations   │
-              └─────────────────────────┘
-                        │
-                        ▼
-         ┌──────────────────────────────┐
-         │  Response with Metadata      │
-         │  - optimized prompt          │
-         │  - token counts & savings    │
-         │  - validation status         │
-         │  - optimization skip reason  │
-         │  - model used                │
-         └──────────────────────────────┘
-                        │
-                        ▼
-                  background.js
-                        │
-                        ▼
-             Chrome Local Storage
-                      │
-                      ▼
-                Usage Statistics
+Browser AI site
+      │
+      ▼
+content.js
+      │
+      ▼
+background.js
+      │
+      ▼
+Python local server (server.py)
+      │
+      ├─ fast local heuristic check
+      ├─ Ollama model request
+      └─ validation before returning result
+      │
+      ▼
+Local model via Ollama
 ```
 
-### Component Details
-
-**content.js** — Runs on supported AI websites, injects the optimize button, and sends prompts to the background script.
-
-**background.js** — Forwards optimization requests from content.js to the local server via `http://127.0.0.1:8765/optimize`.
-
-**server.py** — Implements three key stages:
-1. **Fast Local Check** — Heuristic scoring determines if Ollama optimization is worthwhile
-2. **Ollama Integration** — Calls local LLM only for prompts scoring ≥ 3
-3. **Validation** — Ensures critical elements (code, URLs, numbers, negations) are preserved
-
-**Ollama / Local LLM** — Processes the prompt using the specified model (default: `qwen2.5:3b`) with a fine-tuned system prompt.
-
-## 📁 Project Structure
+## Project structure
 
 ```text
-PromptSaver-Token-Optimizer/
-│
+Prompt-Token-Optimizer/
 ├── extension/
-│   ├── background.js    # Forwards optimization requests
-│   ├── content.js       # Runs on supported AI websites
-│   ├── content.css      # In-page extension styles
-│   ├── manifest.json    # Chrome extension configuration
-│   ├── popup.html       # Extension popup
-│   ├── popup.js         # Health status and usage statistics
-│   ├── popup.css        # Popup styles
-│   ├── icon16.svg       # Extension icon
-│   ├── icon48.svg       # Extension icon
-│   └── icon128.svg      # Extension icon
-│
+│   ├── background.js
+│   ├── content.css
+│   ├── content.js
+│   ├── icon16.svg
+│   ├── icon48.svg
+│   ├── icon128.svg
+│   ├── manifest.json
+│   ├── popup.css
+│   ├── popup.html
+│   └── popup.js
 ├── server/
-│   ├── server.py        # Local API and Ollama integration
-│   ├── run.bat          # Windows startup script
-│   └── run.sh           # Linux/macOS startup script
-│
-├── .gitignore
-├── .gitattributes
-└── README.md
+│   ├── run.bat
+│   ├── run.sh
+│   └── server.py
+├── README.md
+└── .gitignore
 ```
 
-## 🧪Output Example
+## Prerequisites
 
-A messy prompt:
+Before using the extension, install and run Ollama on your machine.
 
-```text
-hey basically i want you to make a login page for my react
-project and it should have username and password and if the
-password is wrong then show an error and i don't want to use
-a database because this is just a prototype and after the
-user logs in i want them to go to the home page and there
-should also be a logout button and make it look good and
-responsive
+Example:
+
+```bash
+ollama pull qwen2.5:3b
 ```
 
-PromptToken Optimizer can transform it into a more concise prompt such as:
+The default model is qwen2.5:3b, but you can override it with environment variables if needed.
 
-```text
-Create a responsive React login page with:
+## Setup
 
-- Username and password authentication
-- Validation and error messages
-- Local/object-based credentials; no database
-- Redirect to the home page after login
-- Logout functionality
-- Clean, modern UI
+### 1. Start the local server
+
+From the server folder:
+
+Windows:
+
+```powershell
+python server.py
 ```
 
-The goal is **not simply to make prompts shorter**. The goal is to remove unnecessary tokens while preserving the user's actual requirements.
+Or use the included helper:
 
-## 🔌 Local Service API
+```powershell
+run.bat
+```
 
-The extension expects the local service to expose the following endpoints.
+Linux/macOS:
 
-### `GET /health`
+```bash
+python server.py
+```
 
-Used by the extension to check whether the local service and model are available.
+or
 
-Example response:
+```bash
+bash run.sh
+```
+
+### 2. Load the extension in Chrome
+
+1. Open Chrome and go to chrome://extensions
+2. Turn on Developer mode
+3. Click Load unpacked
+4. Select the extension folder in this project
+
+### 3. Use it
+
+Open a supported website, paste a long or messy prompt, and click the Prompt Token Optimizer action from the page UI.
+
+## Local server API
+
+### GET /health
+
+Returns whether the local service and model are available.
+
+Example:
 
 ```json
 {
   "ok": true,
-  "model": "qwen2.5:3b"
-}
-```
-
-### `POST /optimize`
-
-The extension sends:
-
-```json
-{
-  "prompt": "The prompt to optimize"
-}
-```
-
-The service returns:
-
-```json
-{
-  "optimized": "The optimized prompt",
   "model": "qwen2.5:3b",
-  "original_tokens": 120,
-  "optimized_tokens": 82,
-  "tokens_saved": 38,
-  "reduction_percent": 31.7,
-  "validation_passed": true,
-  "optimization_skipped": false
+  "available_models": ["qwen2.5:3b"],
+  "status": "ok"
 }
 ```
 
-**Note:** If the prompt is already concise (score < 3 on heuristics), the service returns:
+### POST /optimize
+
+Request:
 
 ```json
 {
-  "optimized": "The prompt (unchanged)",
-  "original_tokens": 45,
-  "optimized_tokens": 45,
-  "tokens_saved": 0,
-  "reduction_percent": 0,
-  "model": "none",
-  "validation_passed": true,
-  "optimization_skipped": true,
-  "reason": "Prompt is already concise. Ollama was not called."
+  "prompt": "Write a React login form with validation and no database."
 }
 ```
 
-## 📊 Token Measurement
+Response:
 
-The current MVP uses an **estimated token count** based on approximately four characters per token.
+```json
+{
+  "optimized": "Create a React login form with validation. Do not use a database.",
+  "original_tokens": 160,
+  "optimized_tokens": 90,
+  "tokens_saved": 70,
+  "reduction_percent": 43.8,
+  "model": "qwen2.5:3b",
+  "validation_passed": true,
+  "optimization_skipped": false,
+  "error_code": "ok"
+}
+```
 
-This means the displayed token savings are useful for comparing the original and optimized prompts, but they are **not exact tokenizer counts** for ChatGPT, Claude, or Gemini.
+## Configuration
 
-Future versions can add platform-specific tokenizers for more accurate measurements.
+The Python server supports environment variables such as:
 
+```bash
+PROMPT_SAVER_MODEL=qwen2.5:3b
+PROMPT_SAVER_FALLBACK_MODELS=llama3.1:8b,mistral
+PROMPT_SAVER_OLLAMA_URL=http://127.0.0.1:11434
+PROMPT_SAVER_PORT=8765
+PROMPT_SAVER_HEALTH_TIMEOUT=3
+PROMPT_SAVER_REQUEST_TIMEOUT=180
+PROMPT_SAVER_RETRIES=2
+PROMPT_SAVER_MAX_PROMPT_LENGTH=30000
+```
 
-## 👨‍💻 Author
+## Privacy and behavior
 
-**Arnav Deore**  
-MCA Student, Christ University, Bangalore
+- Prompt text is sent only to the local service running on your machine.
+- The extension does not require a remote backend for optimization.
+- Optimization is intentionally conservative: if validation fails, the original prompt is kept.
+- The service tries to skip unnecessary work when the prompt is already concise.
+
+## Notes
+
+This project uses an estimated token count rather than a perfect tokenizer implementation. It is designed for practical prompt comparison and savings tracking rather than exact model-specific token accounting.
+
+## Author
+
+Arnav Deore
