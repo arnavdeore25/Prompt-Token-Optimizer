@@ -246,6 +246,19 @@
         ? (saved / before) * 100
         : 0;
 
+    const statusMessage = (() => {
+      if (result.error_code === "validation_failed") {
+        return "⚠ reverted to your original — the rewrite dropped a number, URL, or code block";
+      }
+      if (result.error_code === "unverified") {
+        return "⚠ unverified — this is the model's real rewrite, but double-check any constraints/negations";
+      }
+      if (result.optimization_skipped) {
+        return "already concise — no rewrite needed";
+      }
+      return "✓ preservation checks passed";
+    })();
+
     const modal = document.createElement("div");
 
     modal.id = "ps-modal";
@@ -308,11 +321,7 @@
           <b>Model:</b>
           ${esc(result.model || "local")}
           &nbsp;•&nbsp;
-          ${
-            result.validation_passed
-              ? "✓ preservation checks passed"
-              : "⚠ review carefully"
-          }
+          ${esc(statusMessage)}
         </p>
 
         <div class="actions">
