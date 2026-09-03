@@ -7,6 +7,12 @@ import time
 import urllib.error
 import urllib.request
 
+try:
+    import tiktoken
+    TIKTOKEN_AVAILABLE = True
+except ImportError:  # pragma: no cover - exercised when dependency isn't installed
+    TIKTOKEN_AVAILABLE = False
+
 MODEL = os.getenv("PROMPT_SAVER_MODEL", "qwen2.5:3b")
 FALLBACK_MODELS = [
     item.strip()
@@ -21,6 +27,7 @@ HEALTH_TIMEOUT = int(os.getenv("PROMPT_SAVER_HEALTH_TIMEOUT", "3"))
 REQUEST_TIMEOUT = int(os.getenv("PROMPT_SAVER_REQUEST_TIMEOUT", "180"))
 MAX_RETRIES = int(os.getenv("PROMPT_SAVER_RETRIES", "2"))
 MAX_PROMPT_LENGTH = int(os.getenv("PROMPT_SAVER_MAX_PROMPT_LENGTH", "30000"))
+TOKENIZER_ENCODING = os.getenv("PROMPT_SAVER_TOKENIZER_ENCODING", "cl100k_base")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -46,9 +53,57 @@ Return ONLY the optimized prompt."""
 # ---------------------------------------------------------
 # TOKEN ESTIMATE
 # ---------------------------------------------------------
+# Uses tiktoken's BPE tokenizer when available for accurate,
+# OpenAI-style token counts. Falls back to a char/4 heuristic
+# if tiktoken isn't installed or the encoding can't be loaded,
+# so the server never hard-fails just because of this.
+# ---------------------------------------------------------
+
+_encoder = None
+_encoder_load_attempted = False
+
+
+def _get_encoder():
+    global _encoder, _encoder_load_attempted
+
+    if _encoder_load_attempted:
+        return _encoder
+
+    _encoder_load_attempted = True
+
+    if not TIKTOKEN_AVAILABLE:
+        logger.warning(
+            "tiktoken not installed; falling back to char/4 token estimate. "
+            "Install it with: pip install tiktoken"
+        )
+        return None
+
+    try:
+        _encoder = tiktoken.get_encoding(TOKENIZER_ENCODING)
+    except Exception as exc:
+        logger.warning(
+            "Failed to load tiktoken encoding '%s': %s. Falling back to char/4 estimate.",
+            TOKENIZER_ENCODING,
+            exc
+        )
+        _encoder = None
+
+    return _encoder
+
 
 def est(text):
-    return max(0, (len(text.strip()) + 3) // 4)
+    text = (text or "").strip()
+    if not text:
+        return 0
+
+    encoder = _get_encoder()
+    if encoder is not None:
+        try:
+            return len(encoder.encode(text))
+        except Exception as exc:
+            logger.warning("tiktoken encode failed, using char/4 estimate: %s", exc)
+
+    return max(0, (len(text) + 3) // 4)
 
 
 # ---------------------------------------------------------
@@ -97,12 +152,15 @@ def health_status():
     selected_model, is_available = resolve_model()
 
     ok = bool(available and is_available)
+    tokenizer_active = _get_encoder() is not None
     return {
         "ok": ok,
         "model": selected_model,
         "available_models": available,
         "status": "ok" if ok else "model_unavailable",
-        "message": "" if ok else f"Run: ollama pull {selected_model}"
+        "message": "" if ok else f"Run: ollama pull {selected_model}",
+        "tokenizer": TOKENIZER_ENCODING if tokenizer_active else "char_estimate_fallback",
+        "tokenizer_accurate": tokenizer_active
     }
 
 
