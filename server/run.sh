@@ -2,4 +2,5 @@
 set -e
 command -v ollama >/dev/null || { echo 'Install Ollama first.'; exit 1; }
 ollama pull qwen2.5:3b
+python3 -m pip install -r requirements.txt -q
 python3 server.py
